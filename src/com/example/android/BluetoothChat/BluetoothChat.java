@@ -44,6 +44,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DateFormat;
@@ -97,6 +98,7 @@ public class BluetoothChat extends Activity {
     // Member object for the chat services
     private BluetoothChatService mChatService = null;
     //Name of calibration result
+    public static String mMeterText = null;
 
 
     @TargetApi(Build.VERSION_CODES.ECLAIR)
@@ -171,8 +173,15 @@ public class BluetoothChat extends Activity {
         mCalibrateButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 //Send the string Calibrate to Survey Meter
-                String message = "Calibrate";
+                String message = "Calibrate" + "\n\r";
                 sendMessage(message);
+                if (mConversationArrayAdapter.equals("Ready")) {
+                    Log.d(TAG, "...Ready...");
+                } else {
+                    sendMessage("Calibrate" + "\r\n");
+                    Log.d(TAG, "...re-try calibrate...");
+                }
+                if (mConversationArrayAdapter.equals("Ready")) {
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     public void run() {
@@ -182,8 +191,10 @@ public class BluetoothChat extends Activity {
                             e.printStackTrace();
                         }
                     }
-                }, 60000);
+                }, 61000);
+                }
             }
+
         });
 
         // Initialize the send button with a listener that for click events
@@ -314,6 +325,7 @@ public class BluetoothChat extends Activity {
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
+                mMeterText = readMessage;
                 mConversationArrayAdapter.add(mConnectedDeviceName+":  " + readMessage);
                 break;
             case MESSAGE_DEVICE_NAME:
